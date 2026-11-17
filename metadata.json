@@ -1,0 +1,6 @@
+{
+  "name": "Nadhira & Narendra: Pemburu Hantu Nusantara",
+  "description": "Game petualangan aksi horor 3D Nusantara yang dramatis dan memukau. Pilih Nadhira dengan Magic Star Blast atau Narendra dengan Thunder Blue Blast untuk membasmi hantu legendaris Indonesia dan 5 bos epik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

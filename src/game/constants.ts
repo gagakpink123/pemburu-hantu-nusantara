@@ -1,0 +1,610 @@
+import type { SpriteSheetMeta } from './animation';
+import type { BossType, CharacterId, EnemyPolicy, GhostType, LevelConfig } from './types';
+
+export const WORLD_HEIGHT = 720;
+export const GROUND_Y = 602;
+export const GRAVITY = 2150;
+export const MAX_FALL_SPEED = 1150;
+
+export const HERO_CONFIG: Record<
+  CharacterId,
+  {
+    id: CharacterId;
+    name: string;
+    role: string;
+    spellName: string;
+    spellDesc: string;
+    spriteUrl: string;
+    portraitUrl: string;
+    sheet: SpriteSheetMeta;
+    primaryColor: string;
+    secondaryColor: string;
+    glowRgba: string;
+    moveSpeed: number;
+    jumpVelocity: number;
+    doubleJumpVelocity: number;
+    dashSpeed: number;
+    projectileSpeed: number;
+    projectileDamage: number;
+    fireCooldown: number;
+    maxHp: number;
+  }
+> = {
+  nadhira: {
+    id: 'nadhira',
+    name: 'Nadhira',
+    role: 'Pemburu Sihir Bintang',
+    spellName: 'Magic Star Blast',
+    spellDesc: 'Bola cahaya bintang merah muda berdaya ledak & tembus roh.',
+    spriteUrl: '/assets/sprites/nadhira.png',
+    portraitUrl: '/assets/sprites/nadhira_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/nadhira_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 22,
+    },
+    primaryColor: '#ff5ca8',
+    secondaryColor: '#fde047',
+    glowRgba: 'rgba(255, 92, 168, 0.55)',
+    moveSpeed: 390,
+    jumpVelocity: -760,
+    doubleJumpVelocity: -700,
+    dashSpeed: 840,
+    projectileSpeed: 940,
+    projectileDamage: 24,
+    fireCooldown: 0.24,
+    maxHp: 6,
+  },
+  narendra: {
+    id: 'narendra',
+    name: 'Narendra',
+    role: 'Kesatria Petir Nusantara',
+    spellName: 'Thunder Blue Blast',
+    spellDesc: 'Sambar petir biru berkecepatan tinggi dengan gelombang kejut.',
+    spriteUrl: '/assets/sprites/narendra.png',
+    portraitUrl: '/assets/sprites/narendra_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/narendra_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 22,
+    },
+    primaryColor: '#38bdf8',
+    secondaryColor: '#e0f2fe',
+    glowRgba: 'rgba(56, 189, 248, 0.55)',
+    moveSpeed: 405,
+    jumpVelocity: -755,
+    doubleJumpVelocity: -690,
+    dashSpeed: 880,
+    projectileSpeed: 1120,
+    projectileDamage: 26,
+    fireCooldown: 0.22,
+    maxHp: 6,
+  },
+};
+
+export interface GhostArchetype {
+  kind: GhostType;
+  name: string;
+  policy: EnemyPolicy;
+  spriteUrl: string;
+  sheet: SpriteSheetMeta;
+  w: number;
+  h: number;
+  hp: number;
+  speed: number;
+  damage: number;
+  score: number;
+  auraColor: string;
+  eyeColor: string;
+  floating: boolean;
+  windupSec: number;
+}
+
+export const GHOST_ARCHETYPES: Record<GhostType, GhostArchetype> = {
+  pocong: {
+    kind: 'pocong',
+    name: 'Pocong',
+    policy: 'hopper',
+    spriteUrl: '/assets/sprites/ghosts/pocong.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/pocong_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 18,
+    },
+    w: 58,
+    h: 138,
+    hp: 48,
+    speed: 195,
+    damage: 1,
+    score: 120,
+    auraColor: 'rgba(203, 213, 225, 0.35)',
+    eyeColor: '#ef4444',
+    floating: false,
+    windupSec: 0.38,
+  },
+  kuntilanak: {
+    kind: 'kuntilanak',
+    name: 'Kuntilanak',
+    policy: 'hover_dive',
+    spriteUrl: '/assets/sprites/ghosts/kuntilanak.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/kuntilanak_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 18,
+    },
+    w: 76,
+    h: 146,
+    hp: 62,
+    speed: 225,
+    damage: 1,
+    score: 160,
+    auraColor: 'rgba(167, 139, 250, 0.4)',
+    eyeColor: '#f43f5e',
+    floating: true,
+    windupSec: 0.45,
+  },
+  tuyul: {
+    kind: 'tuyul',
+    name: 'Tuyul',
+    policy: 'thief_sprint',
+    spriteUrl: '/assets/sprites/ghosts/tuyul.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/tuyul_sheet.png',
+      frameW: 152,
+      frameH: 176,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 132,
+      anchorBottomPx: 18,
+    },
+    w: 44,
+    h: 74,
+    hp: 36,
+    speed: 310,
+    damage: 1,
+    score: 150,
+    auraColor: 'rgba(250, 204, 21, 0.35)',
+    eyeColor: '#facc15',
+    floating: false,
+    windupSec: 0.28,
+  },
+  genderuwo: {
+    kind: 'genderuwo',
+    name: 'Genderuwo',
+    policy: 'heavy_charge',
+    spriteUrl: '/assets/sprites/ghosts/genderuwo.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/genderuwo_sheet.png',
+      frameW: 168,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 152,
+    h: 172,
+    hp: 135,
+    speed: 165,
+    damage: 2,
+    score: 260,
+    auraColor: 'rgba(220, 38, 38, 0.42)',
+    eyeColor: '#ff2e2e',
+    floating: false,
+    windupSec: 0.58,
+  },
+  suster_ngesot: {
+    kind: 'suster_ngesot',
+    name: 'Suster Ngesot',
+    policy: 'crawl_surge',
+    spriteUrl: '/assets/sprites/ghosts/suster_ngesot.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/suster_ngesot_sheet.png',
+      frameW: 160,
+      frameH: 184,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 142,
+      anchorBottomPx: 18,
+    },
+    w: 108,
+    h: 88,
+    hp: 58,
+    speed: 245,
+    damage: 1,
+    score: 170,
+    auraColor: 'rgba(190, 18, 60, 0.42)',
+    eyeColor: '#fb7185',
+    floating: false,
+    windupSec: 0.36,
+  },
+  wewe_gombel: {
+    kind: 'wewe_gombel',
+    name: 'Wewe Gombel',
+    policy: 'stalker_claw',
+    spriteUrl: '/assets/sprites/ghosts/wewe_gombel.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/wewe_gombel_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 18,
+    },
+    w: 106,
+    h: 138,
+    hp: 84,
+    speed: 215,
+    damage: 1,
+    score: 210,
+    auraColor: 'rgba(234, 88, 12, 0.4)',
+    eyeColor: '#fb923c',
+    floating: false,
+    windupSec: 0.42,
+  },
+  leak: {
+    kind: 'leak',
+    name: 'Leak Bali',
+    policy: 'ranged_orb',
+    spriteUrl: '/assets/sprites/ghosts/leak.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/leak_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 18,
+    },
+    w: 96,
+    h: 138,
+    hp: 90,
+    speed: 175,
+    damage: 1,
+    score: 240,
+    auraColor: 'rgba(249, 115, 22, 0.5)',
+    eyeColor: '#fde047',
+    floating: true,
+    windupSec: 0.52,
+  },
+  hantu_bayangan: {
+    kind: 'hantu_bayangan',
+    name: 'Hantu Bayangan',
+    policy: 'shadow_blink',
+    spriteUrl: '/assets/sprites/ghosts/hantu_bayangan.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/ghosts/hantu_bayangan_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 148,
+      anchorBottomPx: 18,
+    },
+    w: 84,
+    h: 142,
+    hp: 76,
+    speed: 245,
+    damage: 1,
+    score: 230,
+    auraColor: 'rgba(139, 92, 246, 0.48)',
+    eyeColor: '#f8fafc',
+    floating: true,
+    windupSec: 0.46,
+  },
+};
+
+export interface BossArchetype {
+  kind: BossType;
+  name: string;
+  title: string;
+  spriteUrl: string;
+  portraitUrl: string;
+  sheet: SpriteSheetMeta;
+  w: number;
+  h: number;
+  hp: number;
+  damage: number;
+  score: number;
+  auraColor: string;
+  projectileColor: string;
+  floating: boolean;
+}
+
+export const BOSS_ARCHETYPES: Record<BossType, BossArchetype> = {
+  raja_pocong: {
+    kind: 'raja_pocong',
+    name: 'Raja Pocong',
+    title: 'Penguasa Desa Angker',
+    spriteUrl: '/assets/sprites/bosses/raja_pocong.png',
+    portraitUrl: '/assets/sprites/bosses/raja_pocong_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/bosses/raja_pocong_sheet.png',
+      frameW: 160,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 112,
+    h: 226,
+    hp: 420,
+    damage: 1,
+    score: 1500,
+    auraColor: 'rgba(234, 179, 8, 0.55)',
+    projectileColor: '#fbbf24',
+    floating: false,
+  },
+  ratu_kuntilanak: {
+    kind: 'ratu_kuntilanak',
+    name: 'Ratu Kuntilanak',
+    title: 'Maharani Hutan Larangan',
+    spriteUrl: '/assets/sprites/bosses/ratu_kuntilanak.png',
+    portraitUrl: '/assets/sprites/bosses/ratu_kuntilanak_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/bosses/ratu_kuntilanak_sheet.png',
+      frameW: 168,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 224,
+    h: 172,
+    hp: 540,
+    damage: 1,
+    score: 2000,
+    auraColor: 'rgba(192, 132, 252, 0.6)',
+    projectileColor: '#d946ef',
+    floating: true,
+  },
+  genderuwo_penunggu: {
+    kind: 'genderuwo_penunggu',
+    name: 'Genderuwo Penunggu',
+    title: 'Raksasa Kampung Kuburan',
+    spriteUrl: '/assets/sprites/bosses/genderuwo_penunggu.png',
+    portraitUrl: '/assets/sprites/bosses/genderuwo_penunggu_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/bosses/genderuwo_penunggu_sheet.png',
+      frameW: 168,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 196,
+    h: 238,
+    hp: 680,
+    damage: 2,
+    score: 2500,
+    auraColor: 'rgba(239, 68, 68, 0.58)',
+    projectileColor: '#ef4444',
+    floating: false,
+  },
+  ratu_leak: {
+    kind: 'ratu_leak',
+    name: 'Ratu Leak',
+    title: 'Sang Penjaga Pura Terlarang',
+    spriteUrl: '/assets/sprites/bosses/ratu_leak.png',
+    portraitUrl: '/assets/sprites/bosses/ratu_leak_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/bosses/ratu_leak_sheet.png',
+      frameW: 168,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 162,
+    h: 248,
+    hp: 820,
+    damage: 2,
+    score: 3200,
+    auraColor: 'rgba(249, 115, 22, 0.62)',
+    projectileColor: '#fb923c',
+    floating: true,
+  },
+  penunggu_kerajaan_gaib: {
+    kind: 'penunggu_kerajaan_gaib',
+    name: 'Penunggu Kerajaan Gaib',
+    title: 'Maharaja Alam Arwah Nusantara',
+    spriteUrl: '/assets/sprites/bosses/penunggu_kerajaan_gaib.png',
+    portraitUrl: '/assets/sprites/bosses/penunggu_kerajaan_gaib_portrait.png',
+    sheet: {
+      sheetUrl: '/assets/sprites/bosses/penunggu_kerajaan_gaib_sheet.png',
+      frameW: 168,
+      frameH: 192,
+      cols: 24,
+      rows: 14,
+      colsPerDir: 12,
+      drawH: 150,
+      anchorBottomPx: 18,
+    },
+    w: 184,
+    h: 242,
+    hp: 1050,
+    damage: 2,
+    score: 5000,
+    auraColor: 'rgba(56, 189, 248, 0.65)',
+    projectileColor: '#67e8f9',
+    floating: true,
+  },
+};
+
+export const LEVELS: LevelConfig[] = [
+  {
+    id: 1,
+    slug: 'desa-angker',
+    name: 'Desa Angker',
+    subtitle: 'Gerbang Kabut & Obor Desa Terkutuk',
+    bgUrl: '/assets/aistudio/bg_level_1_desa_angker_1794569487572_975c74e9.jpg',
+    bgmKey: 'bgm_level_1',
+    ambientTint: 'rgba(14, 18, 38, 0.42)',
+    fogColor: 'rgba(130, 155, 210, 0.14)',
+    moonColor: 'rgba(195, 220, 255, 0.22)',
+    groundTopColor: '#4c3f34',
+    groundBodyColor: '#17131a',
+    accentColor: '#f59e0b',
+    worldWidth: 3700,
+    arenaStartX: 2780,
+    bossType: 'raja_pocong',
+    ghostPool: ['pocong', 'tuyul', 'kuntilanak', 'suster_ngesot'],
+    spawnCount: 12,
+  },
+  {
+    id: 2,
+    slug: 'hutan-larangan',
+    name: 'Hutan Larangan',
+    subtitle: 'Rimba Beringin & Tangis Kuntilanak',
+    bgUrl: '/assets/aistudio/bg_level_2_hutan_larangan_1794569487420_92cccca0.jpg',
+    bgmKey: 'bgm_level_2',
+    ambientTint: 'rgba(8, 28, 26, 0.45)',
+    fogColor: 'rgba(72, 180, 145, 0.14)',
+    moonColor: 'rgba(155, 255, 215, 0.18)',
+    groundTopColor: '#2d4738',
+    groundBodyColor: '#0e1714',
+    accentColor: '#34d399',
+    worldWidth: 4000,
+    arenaStartX: 3060,
+    bossType: 'ratu_kuntilanak',
+    ghostPool: ['kuntilanak', 'pocong', 'tuyul', 'wewe_gombel', 'genderuwo'],
+    spawnCount: 15,
+  },
+  {
+    id: 3,
+    slug: 'kampung-kuburan',
+    name: 'Kampung Kuburan',
+    subtitle: 'Nisan Kuno & Kabut Darah Malam',
+    bgUrl: '/assets/aistudio/bg_level_3_kampung_kuburan_1794569488366_39fc9f71.jpg',
+    bgmKey: 'bgm_level_3',
+    ambientTint: 'rgba(26, 12, 28, 0.48)',
+    fogColor: 'rgba(175, 110, 195, 0.15)',
+    moonColor: 'rgba(235, 180, 255, 0.2)',
+    groundTopColor: '#483b4a',
+    groundBodyColor: '#130e18',
+    accentColor: '#e879f9',
+    worldWidth: 4250,
+    arenaStartX: 3300,
+    bossType: 'genderuwo_penunggu',
+    ghostPool: ['pocong', 'suster_ngesot', 'genderuwo', 'wewe_gombel', 'hantu_bayangan'],
+    spawnCount: 17,
+  },
+  {
+    id: 4,
+    slug: 'pura-terlarang',
+    name: 'Pura Terlarang',
+    subtitle: 'Gapura Api Merah & Kutukan Leak',
+    bgUrl: '/assets/aistudio/bg_level_4_pura_terlarang_1794569488944_d8ca0cf6.jpg',
+    bgmKey: 'bgm_level_4',
+    ambientTint: 'rgba(32, 10, 12, 0.44)',
+    fogColor: 'rgba(230, 105, 65, 0.15)',
+    moonColor: 'rgba(255, 175, 120, 0.2)',
+    groundTopColor: '#5a3a2c',
+    groundBodyColor: '#190f0e',
+    accentColor: '#fb923c',
+    worldWidth: 4450,
+    arenaStartX: 3500,
+    bossType: 'ratu_leak',
+    ghostPool: ['leak', 'kuntilanak', 'genderuwo', 'hantu_bayangan', 'wewe_gombel'],
+    spawnCount: 19,
+  },
+  {
+    id: 5,
+    slug: 'kerajaan-gaib',
+    name: 'Kerajaan Gaib',
+    subtitle: 'Singgasana Kabut & Maharaja Arwah',
+    bgUrl: '/assets/aistudio/bg_level_5_kerajaan_gaib_1794569489420_29ad6ebb.jpg',
+    bgmKey: 'bgm_level_5',
+    ambientTint: 'rgba(8, 22, 42, 0.46)',
+    fogColor: 'rgba(90, 185, 245, 0.16)',
+    moonColor: 'rgba(135, 230, 255, 0.24)',
+    groundTopColor: '#364b68',
+    groundBodyColor: '#0b1220',
+    accentColor: '#38bdf8',
+    worldWidth: 4700,
+    arenaStartX: 3720,
+    bossType: 'penunggu_kerajaan_gaib',
+    ghostPool: ['hantu_bayangan', 'leak', 'genderuwo', 'kuntilanak', 'suster_ngesot', 'pocong'],
+    spawnCount: 22,
+  },
+];
+
+export const ITEM_ASSETS = {
+  coin: '/assets/aistudio/coin_14b458a4.png',
+  star: '/assets/aistudio/star_c3d019b0.png',
+  potion: '/assets/aistudio/potion_2ef982f2.png',
+  crystal: '/assets/aistudio/crystal_56be558d.png',
+  power_orb: '/assets/aistudio/power_orb_ff48d787.png',
+  chest: '/assets/aistudio/chest_920e9759.png',
+  key: '/assets/aistudio/key_7655911c.png',
+  magic_star_blast: '/assets/aistudio/magic_star_blast_2c6e24e0.png',
+  thunder_blue_blast: '/assets/aistudio/thunder_blue_blast_2086c67c.png',
+};
+
+export const AUDIO_ASSETS = {
+  bgm_level_1: '/assets/aistudio/bgm_level_1_82cbaab1.mp3',
+  bgm_level_2: '/assets/aistudio/bgm_level_2_3174d725.mp3',
+  bgm_level_3: '/assets/aistudio/bgm_level_3_da4da6fc.mp3',
+  bgm_level_4: '/assets/aistudio/bgm_level_4_35f4bb3e.mp3',
+  bgm_level_5: '/assets/aistudio/bgm_level_5_eb709d33.mp3',
+  jump: '/assets/aistudio/jump_b7d11c4a.mp3',
+  double_jump: '/assets/aistudio/double_jump_4fa04496.mp3',
+  shoot_magic: '/assets/aistudio/shoot_magic_f72317fa.mp3',
+  magic_hit: '/assets/aistudio/magic_hit_97eade97.mp3',
+  ghost_hit: '/assets/aistudio/ghost_hit_972114d1.mp3',
+  ghost_defeat: '/assets/aistudio/ghost_defeat_f9f93a67.mp3',
+  pocong_sound: '/assets/aistudio/pocong_sound_fcda4610.mp3',
+  kuntilanak_laugh: '/assets/aistudio/kuntilanak_laugh_65b8f028.mp3',
+  tuyul_sound: '/assets/aistudio/tuyul_sound_929b5531.mp3',
+  genderuwo_roar: '/assets/aistudio/genderuwo_roar_ce72a1e4.mp3',
+  coin_collect: '/assets/aistudio/coin_collect_b6ec6ef6.mp3',
+  potion_collect: '/assets/aistudio/potion_collect_1fb57ac1.mp3',
+  player_hurt: '/assets/aistudio/player_hurt_fb664148.mp3',
+  boss_appear: '/assets/aistudio/boss_appear_df68971b.mp3',
+  boss_defeat: '/assets/aistudio/boss_defeat_71a5ab7e.mp3',
+  level_complete: '/assets/aistudio/level_complete_0544ff3d.mp3',
+  game_over: '/assets/aistudio/game_over_6c96484f.mp3',
+  button_click: '/assets/aistudio/button_click_1eb6e87d.mp3',
+  dash: '/assets/aistudio/dash_7baec094.mp3',
+  checkpoint: '/assets/aistudio/checkpoint_754b6d14.mp3',
+} as const;
+
+export type SfxKey = Exclude<
+  keyof typeof AUDIO_ASSETS,
+  'bgm_level_1' | 'bgm_level_2' | 'bgm_level_3' | 'bgm_level_4' | 'bgm_level_5'
+>;
